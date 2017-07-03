@@ -1,0 +1,11 @@
+{
+  "type": 0,
+  "platform": [
+    "android",
+    "ios"
+  ],
+  "module": "sm_imagebarcode",
+  "methods": [
+    "barcodeFromImage"
+  ]
+}
