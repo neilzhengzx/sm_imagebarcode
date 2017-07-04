@@ -1,6 +1,5 @@
 
 #import "SMOSmImagebarcode.h"
-#import "ZXingObjC/ZXingObjC.h"
 #import "JGProgressHUDheaders/JGProgressHUD.h"
 
 @interface SMOSmImagebarcode ()
@@ -21,10 +20,10 @@
 }
 
 RCT_EXPORT_MODULE()
-      
+
 RCT_EXPORT_METHOD(barcodeFromImage:(NSDictionary *)params callback:(RCTResponseSenderBlock)callback)
 {
-  //barcodeFromImage 实现, 需要回传结果用callback(@[XXX]), 数组参数里面就一个NSDictionary元素即可
+    //barcodeFromImage 实现, 需要回传结果用callback(@[XXX]), 数组参数里面就一个NSDictionary元素即可
     _mCallback = callback;
     
     UIImagePickerController *imagePicker = [[UIImagePickerController alloc] init];
@@ -41,7 +40,7 @@ RCT_EXPORT_METHOD(barcodeFromImage:(NSDictionary *)params callback:(RCTResponseS
 - (JGProgressHUD *)prototypeHUD {
     JGProgressHUD *HUD = [[JGProgressHUD alloc] initWithStyle:_style];
     HUD.interactionType = _interaction;
-
+    
     HUD.backgroundColor = [UIColor colorWithWhite:0.0f alpha:0.4f];
     
     return HUD;
@@ -50,7 +49,9 @@ RCT_EXPORT_METHOD(barcodeFromImage:(NSDictionary *)params callback:(RCTResponseS
 - (void)imagePickerController:(UIImagePickerController *)picker
 didFinishPickingMediaWithInfo:(NSDictionary *)info
 {
-    UIImage *image = [info objectForKey:UIImagePickerControllerEditedImage];
+    UIImage *pickImage = info[UIImagePickerControllerEditedImage];
+    NSData *imageData = UIImagePNGRepresentation(pickImage);
+    CIImage *ciImage = [CIImage imageWithData:imageData];
     
     JGProgressHUD *HUD = self.prototypeHUD;
     
@@ -72,50 +73,18 @@ didFinishPickingMediaWithInfo:(NSDictionary *)info
     
     
     [picker dismissViewControllerAnimated:YES completion:^{
-        ZXLuminanceSource *source = [[ZXCGImageLuminanceSource alloc] initWithCGImage:image.CGImage];
-        ZXBinaryBitmap *bitmap = [ZXBinaryBitmap binaryBitmapWithBinarizer:[ZXHybridBinarizer binarizerWithSource:source]];
+        //创建探测器
+        CIDetector *detector = [CIDetector detectorOfType:CIDetectorTypeQRCode context:nil options:@{CIDetectorAccuracy: CIDetectorAccuracyLow}];
+        NSArray *feature = [detector featuresInImage:ciImage];
         
-        NSError *error = nil;
-        
-        // There are a number of hints we can give to the reader, including
-        // possible formats, allowed lengths, and the string encoding.
-        ZXDecodeHints *hints = [ZXDecodeHints hints];
-        [hints addPossibleFormat:kBarcodeFormatAztec];
-        [hints addPossibleFormat:kBarcodeFormatQRCode];
-        [hints addPossibleFormat:kBarcodeFormatMaxiCode];
-        
-        [hints addPossibleFormat:kBarcodeFormatCode128];
-        [hints addPossibleFormat:kBarcodeFormatCodabar];
-        [hints addPossibleFormat:kBarcodeFormatCode93];
-        [hints addPossibleFormat:kBarcodeFormatCode39];
-        
-        [hints addPossibleFormat:kBarcodeFormatDataMatrix];
-        [hints addPossibleFormat:kBarcodeFormatPDF417];
-        
-        [hints addPossibleFormat:kBarcodeFormatEan13];
-        [hints addPossibleFormat:kBarcodeFormatEan8];
-        [hints addPossibleFormat:kBarcodeFormatUPCA];
-        [hints addPossibleFormat:kBarcodeFormatUPCE];
-        [hints addPossibleFormat:kBarcodeFormatRSS14];
-        [hints addPossibleFormat:kBarcodeFormatRSSExpanded];
-        
-        
-        ZXMultiFormatReader *reader = [ZXMultiFormatReader reader];
-        ZXResult *result = [reader decode:bitmap
-                                    hints:hints
-                                    error:&error];
-        
-        if (result) {
-            // The coded result as a string. The raw data can be accessed with
-            // result.rawBytes and result.length.
+        //取出探测到的数据
+        for (CIQRCodeFeature *result in feature) {
             [HUD dismiss];
-            [self captureResult:nil result:result];
-            
-        } else {
-            //            NSLog(@"error = %@", error);
-            [HUD dismissAfterDelay:1.0];
-            
+            _mCallback(@[@{@"result":result.messageString}]);
+            return;
         }
+        
+        [HUD dismissAfterDelay:1.0];
     }];
 }
 
@@ -125,17 +94,5 @@ didFinishPickingMediaWithInfo:(NSDictionary *)info
                                completion:nil];
 }
 
-#pragma mark - ZXCaptureDelegate Methods
-
-- (void)captureResult:(ZXCapture *)capture result:(ZXResult *)result {
-    if (!result) return;
-    
-    AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
-    
-    [result rawBytes];
-    
-    _mCallback(@[@{@"result":result.text}]);
-}
-
 @end
-  
+
