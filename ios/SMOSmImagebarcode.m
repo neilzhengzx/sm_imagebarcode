@@ -2,6 +2,8 @@
 #import "SMOSmImagebarcode.h"
 #import "JGProgressHUDheaders/JGProgressHUD.h"
 
+static JGProgressHUD *LOADDING;
+
 @interface SMOSmImagebarcode ()
 {
     JGProgressHUDStyle _style;
@@ -9,6 +11,7 @@
 }
 
 @property (nonatomic, copy) RCTResponseSenderBlock mCallback;
+@property (nonatomic, copy) JGProgressHUD *HUD;
 
 @end
 
@@ -37,13 +40,38 @@ RCT_EXPORT_METHOD(barcodeFromImage:(NSDictionary *)params callback:(RCTResponseS
     [[UIApplication sharedApplication].keyWindow.rootViewController presentViewController:imagePicker animated:YES completion:nil];
 }
 
+RCT_EXPORT_METHOD(showLoadding:(NSDictionary *)params callback:(RCTResponseSenderBlock)callback)
+{
+    //showLoadding 实现, 需要回传结果用callback(@[XXX]), 数组参数里面就一个NSDictionary元素即可
+    
+    NSString* message = [params objectForKey:@"message"];
+    
+    JGProgressHUD *HUD = self.prototypeHUD;
+    
+    HUD.textLabel.text = message;
+    
+    [HUD showInView:[UIApplication sharedApplication].keyWindow.rootViewController.view];
+    
+    HUD.marginInsets = UIEdgeInsetsMake(0.0f, 0.0f, 10.0f, 0.0f);
+}
+
+RCT_EXPORT_METHOD(dimissLoadding:(NSDictionary *)params callback:(RCTResponseSenderBlock)callback)
+{
+    //dimissLoadding 实现, 需要回传结果用callback(@[XXX]), 数组参数里面就一个NSDictionary元素即可
+    JGProgressHUD *HUD = self.prototypeHUD;
+    [HUD dismiss];
+}
+
 - (JGProgressHUD *)prototypeHUD {
-    JGProgressHUD *HUD = [[JGProgressHUD alloc] initWithStyle:_style];
-    HUD.interactionType = _interaction;
+    if(LOADDING == NULL)
+    {
+        LOADDING = [[JGProgressHUD alloc] initWithStyle:_style];
+        LOADDING.interactionType = _interaction;
+        
+        LOADDING.backgroundColor = [UIColor colorWithWhite:0.0f alpha:0.4f];
+    }
     
-    HUD.backgroundColor = [UIColor colorWithWhite:0.0f alpha:0.4f];
-    
-    return HUD;
+    return LOADDING;
 }
 
 - (void)imagePickerController:(UIImagePickerController *)picker
