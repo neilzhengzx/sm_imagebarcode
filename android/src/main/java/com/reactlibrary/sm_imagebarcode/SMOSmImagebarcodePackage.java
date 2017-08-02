@@ -16,7 +16,7 @@ public class SMOSmImagebarcodePackage implements ReactPackage {
       return Arrays.<NativeModule>asList(new SMOSmImagebarcodeModule(reactContext));
     }
 
-    @Override
+//    @Override
     public List<Class<? extends JavaScriptModule>> createJSModules() {
       return Collections.emptyList();
     }
