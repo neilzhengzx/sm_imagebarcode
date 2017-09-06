@@ -50,7 +50,9 @@ RCT_EXPORT_METHOD(showLoadding:(NSDictionary *)params callback:(RCTResponseSende
     
     HUD.textLabel.text = message;
     
-    [HUD showInView:[UIApplication sharedApplication].keyWindow.rootViewController.view];
+    UIView *topView = [[[UIApplication sharedApplication].keyWindow subviews] lastObject];
+    
+    [HUD showInView:topView];
     
     HUD.marginInsets = UIEdgeInsetsMake(0.0f, 0.0f, 10.0f, 0.0f);
 }
