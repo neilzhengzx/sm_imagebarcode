@@ -68,7 +68,6 @@ RCT_EXPORT_METHOD(dimissLoadding:(NSDictionary *)params callback:(RCTResponseSen
         LOADDING = [JGProgressHUD progressHUDWithStyle:JGProgressHUDStyleDark];
         LOADDING.interactionType = _interaction;
         LOADDING.backgroundColor = [UIColor colorWithWhite:0.0f alpha:0.4f];
-        LOADDING.textLabel.textColor = [UIColor colorWithWhite:0.47f alpha:1.0f];
     }
     
     return LOADDING;

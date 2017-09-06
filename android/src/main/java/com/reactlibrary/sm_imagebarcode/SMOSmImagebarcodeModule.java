@@ -32,6 +32,7 @@ import com.google.zxing.MultiFormatReader;
 import com.google.zxing.NotFoundException;
 import com.google.zxing.Result;
 import com.google.zxing.common.HybridBinarizer;
+import com.kaopiz.kprogresshud.KProgressHUD;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -46,6 +47,7 @@ public class SMOSmImagebarcodeModule extends ReactContextBaseJavaModule implemen
   private static final int ACTIVITY_RESULT_FOR_PHOTO = 101;
   private static final int REQUEST_CODE_ASK_CAMERA_ZXING = 102;
   private Callback mCallBack;
+  public static KProgressHUD mHud = null;
 
   public SMOSmImagebarcodeModule(ReactApplicationContext reactContext) {
     super(reactContext);
@@ -90,6 +92,39 @@ public class SMOSmImagebarcodeModule extends ReactContextBaseJavaModule implemen
 
     Intent intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
     mCurrentActivety.startActivityForResult(intent, ACTIVITY_RESULT_FOR_PHOTO);
+  }
+
+  @ReactMethod
+  public void showLoadding(ReadableMap params, Callback callback) {
+    mCurrentActivety = getCurrentActivity();
+    if (mCurrentActivety == null) {
+      return;
+    }
+    String message = "";
+    if (params.hasKey("message")) {
+      message = params.getString("message");
+    }
+    if(mHud == null){
+      mHud = KProgressHUD.create(mCurrentActivety)
+              .setStyle(KProgressHUD.Style.SPIN_INDETERMINATE)
+              .setLabel(message)
+              .setAnimationSpeed(1)
+              .setDimAmount(0.5f)
+              .show();
+    }else if(mHud.isShowing() == false){
+      mHud.setLabel(message);
+      mHud.show();
+    }else if(mHud.isShowing() == true){
+      mHud.setLabel(message);
+    }
+  }
+
+  @ReactMethod
+  public void dimissLoadding(ReadableMap params, Callback callback){
+    if(mHud != null){
+      mHud.dismiss();
+      mHud = null;
+    }
   }
 
   public void onActivityResult(Activity activity, int requestCode, int resultCode, Intent intent) {
