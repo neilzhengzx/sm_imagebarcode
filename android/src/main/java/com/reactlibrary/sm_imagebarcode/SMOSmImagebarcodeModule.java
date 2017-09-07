@@ -118,12 +118,12 @@ public class SMOSmImagebarcodeModule extends ReactContextBaseJavaModule implemen
               .setLabel(mMessage)
               .setAnimationSpeed(1)
               .setDimAmount(0.5f)
-              .setGraceTime(500)
+              .setGraceTime(200)
               .show();
     }else{
       mHud.setLabel(mMessage);
       if(mHud.isShowing() == false){
-        mHud.setGraceTime(500)
+        mHud.setGraceTime(200)
             .show();
       }
     }

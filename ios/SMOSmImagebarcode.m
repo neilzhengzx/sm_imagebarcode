@@ -52,7 +52,7 @@ RCT_EXPORT_METHOD(showLoadding:(NSDictionary *)params callback:(RCTResponseSende
     {
         [_mTimer invalidate];
     }
-    _mTimer = [NSTimer scheduledTimerWithTimeInterval:0.5 target:self selector:@selector(delayMethod) userInfo:nil repeats:NO];
+    _mTimer = [NSTimer scheduledTimerWithTimeInterval:0.2 target:self selector:@selector(delayMethod) userInfo:nil repeats:NO];
 }
 
 - (void)delayMethod
