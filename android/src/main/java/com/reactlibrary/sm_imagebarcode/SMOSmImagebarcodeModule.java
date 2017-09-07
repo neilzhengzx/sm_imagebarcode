@@ -11,6 +11,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.media.ExifInterface;
 import android.net.Uri;
+import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -48,6 +49,13 @@ public class SMOSmImagebarcodeModule extends ReactContextBaseJavaModule implemen
   private static final int REQUEST_CODE_ASK_CAMERA_ZXING = 102;
   private Callback mCallBack;
   public static KProgressHUD mHud = null;
+  private Handler mDimissHandler = null;
+  private String mMessage = "";
+  private Runnable mTimeout = new Runnable(){
+    public void run() {
+      dimissLoadding(null,null);
+    }
+  };
 
   public SMOSmImagebarcodeModule(ReactApplicationContext reactContext) {
     super(reactContext);
@@ -100,23 +108,31 @@ public class SMOSmImagebarcodeModule extends ReactContextBaseJavaModule implemen
     if (mCurrentActivety == null) {
       return;
     }
-    String message = "";
     if (params.hasKey("message")) {
-      message = params.getString("message");
+      mMessage = params.getString("message");
     }
+
     if(mHud == null){
       mHud = KProgressHUD.create(mCurrentActivety)
               .setStyle(KProgressHUD.Style.SPIN_INDETERMINATE)
-              .setLabel(message)
+              .setLabel(mMessage)
               .setAnimationSpeed(1)
               .setDimAmount(0.5f)
+              .setGraceTime(500)
               .show();
-    }else if(mHud.isShowing() == false){
-      mHud.setLabel(message);
-      mHud.show();
-    }else if(mHud.isShowing() == true){
-      mHud.setLabel(message);
+    }else{
+      mHud.setLabel(mMessage);
+      if(mHud.isShowing() == false){
+        mHud.setGraceTime(500)
+            .show();
+      }
     }
+    if(mDimissHandler == null){
+      mDimissHandler = new Handler();
+    }else{
+      mDimissHandler.removeCallbacks(mTimeout);
+    }
+    mDimissHandler.postDelayed(mTimeout, 30000);
   }
 
   @ReactMethod
@@ -124,6 +140,10 @@ public class SMOSmImagebarcodeModule extends ReactContextBaseJavaModule implemen
     if(mHud != null){
       mHud.dismiss();
       mHud = null;
+    }
+    if(mDimissHandler != null){
+      mDimissHandler.removeCallbacks(mTimeout);
+      mDimissHandler = null;
     }
   }
 

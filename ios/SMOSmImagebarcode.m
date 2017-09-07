@@ -8,10 +8,12 @@ static JGProgressHUD *LOADDING;
 {
     JGProgressHUDStyle _style;
     JGProgressHUDInteractionType _interaction;
+    NSString* _loaddingText;
 }
 
 @property (nonatomic, copy) RCTResponseSenderBlock mCallback;
 @property (nonatomic, copy) JGProgressHUD *HUD;
+@property (nonatomic, copy) NSTimer* mTimer;
 
 @end
 
@@ -44,15 +46,26 @@ RCT_EXPORT_METHOD(showLoadding:(NSDictionary *)params callback:(RCTResponseSende
 {
     //showLoadding 实现, 需要回传结果用callback(@[XXX]), 数组参数里面就一个NSDictionary元素即可
     
-    NSString* message = [params objectForKey:@"message"];
+    _loaddingText = [params objectForKey:@"message"];
     
+    if(_mTimer)
+    {
+        [_mTimer invalidate];
+    }
+    _mTimer = [NSTimer scheduledTimerWithTimeInterval:0.5 target:self selector:@selector(delayMethod) userInfo:nil repeats:NO];
+}
+
+- (void)delayMethod
+{
     JGProgressHUD *HUD = self.prototypeHUD;
     
-    HUD.textLabel.text = message;
+    HUD.textLabel.text = _loaddingText;
     
     UIView *topView = [[[UIApplication sharedApplication].keyWindow subviews] lastObject];
     
     [HUD showInView:topView];
+    
+    [HUD dismissAfterDelay:30.0];
     
     HUD.marginInsets = UIEdgeInsetsMake(0.0f, 0.0f, 10.0f, 0.0f);
 }
@@ -60,6 +73,11 @@ RCT_EXPORT_METHOD(showLoadding:(NSDictionary *)params callback:(RCTResponseSende
 RCT_EXPORT_METHOD(dimissLoadding:(NSDictionary *)params callback:(RCTResponseSenderBlock)callback)
 {
     //dimissLoadding 实现, 需要回传结果用callback(@[XXX]), 数组参数里面就一个NSDictionary元素即可
+    if(_mTimer)
+    {
+        [_mTimer invalidate];
+        _mTimer = nil;
+    }
     JGProgressHUD *HUD = self.prototypeHUD;
     [HUD dismiss];
 }
