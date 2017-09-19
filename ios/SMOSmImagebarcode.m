@@ -61,9 +61,10 @@ RCT_EXPORT_METHOD(showLoadding:(NSDictionary *)params callback:(RCTResponseSende
     
     HUD.textLabel.text = _loaddingText;
     
-    UIView *topView = [[[UIApplication sharedApplication].keyWindow subviews] lastObject];
-    
-    [HUD showInView:topView];
+    if( ![HUD isVisible]){
+        UIView *topView = [[[UIApplication sharedApplication].keyWindow subviews] lastObject];
+        [HUD showInView:topView];
+    }
     
     [HUD dismissAfterDelay:30.0];
     
