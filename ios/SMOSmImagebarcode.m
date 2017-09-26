@@ -3,6 +3,7 @@
 #import "JGProgressHUDheaders/JGProgressHUD.h"
 
 static JGProgressHUD *LOADDING;
+static Boolean isLoadding;
 
 @interface SMOSmImagebarcode ()
 {
@@ -45,7 +46,7 @@ RCT_EXPORT_METHOD(barcodeFromImage:(NSDictionary *)params callback:(RCTResponseS
 RCT_EXPORT_METHOD(showLoadding:(NSDictionary *)params callback:(RCTResponseSenderBlock)callback)
 {
     //showLoadding 实现, 需要回传结果用callback(@[XXX]), 数组参数里面就一个NSDictionary元素即可
-    
+    isLoadding = true;
     _loaddingText = [params objectForKey:@"message"];
     
     if(_mTimer)
@@ -74,6 +75,7 @@ RCT_EXPORT_METHOD(showLoadding:(NSDictionary *)params callback:(RCTResponseSende
 RCT_EXPORT_METHOD(dimissLoadding:(NSDictionary *)params callback:(RCTResponseSenderBlock)callback)
 {
     //dimissLoadding 实现, 需要回传结果用callback(@[XXX]), 数组参数里面就一个NSDictionary元素即可
+    isLoadding = false;
     if(_mTimer)
     {
         [_mTimer invalidate];
@@ -81,6 +83,16 @@ RCT_EXPORT_METHOD(dimissLoadding:(NSDictionary *)params callback:(RCTResponseSen
     }
     JGProgressHUD *HUD = self.prototypeHUD;
     [HUD dismiss];
+}
+
+RCT_EXPORT_METHOD(isLoadding:(NSDictionary *)params callback:(RCTResponseSenderBlock)callback)
+{
+    //dimissLoadding 实现, 需要回传结果用callback(@[XXX]), 数组参数里面就一个NSDictionary元素即可
+    if(isLoadding == true){
+        callback(@[@{@"result":@true}]);
+    }else{
+        callback(@[@{@"result":@false}]);
+    }
 }
 
 - (JGProgressHUD *)prototypeHUD {

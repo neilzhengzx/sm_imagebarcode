@@ -51,6 +51,7 @@ public class SMOSmImagebarcodeModule extends ReactContextBaseJavaModule implemen
   public static KProgressHUD mHud = null;
   private Handler mDimissHandler = null;
   private String mMessage = "";
+  private static boolean mIsLoadding = false;
   private Runnable mTimeout = new Runnable(){
     public void run() {
       dimissLoadding(null,null);
@@ -108,6 +109,7 @@ public class SMOSmImagebarcodeModule extends ReactContextBaseJavaModule implemen
     if (mCurrentActivety == null) {
       return;
     }
+    mIsLoadding = true;
     if (params.hasKey("message")) {
       mMessage = params.getString("message");
     }
@@ -137,7 +139,8 @@ public class SMOSmImagebarcodeModule extends ReactContextBaseJavaModule implemen
 
   @ReactMethod
   public void dimissLoadding(ReadableMap params, Callback callback){
-    if(mHud != null){
+    mIsLoadding = false;
+	if(mHud != null){
       mHud.dismiss();
       mHud = null;
     }
@@ -145,6 +148,17 @@ public class SMOSmImagebarcodeModule extends ReactContextBaseJavaModule implemen
       mDimissHandler.removeCallbacks(mTimeout);
       mDimissHandler = null;
     }
+  }
+
+  @ReactMethod
+  public void isLoadding(ReadableMap params, Callback callback){
+    WritableMap response = Arguments.createMap();
+    if(mIsLoadding == true){
+      response.putBoolean("result", true );
+    }else{
+      response.putBoolean("result", false );
+    }
+    callback.invoke(response);
   }
 
   public void onActivityResult(Activity activity, int requestCode, int resultCode, Intent intent) {
