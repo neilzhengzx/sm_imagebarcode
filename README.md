@@ -42,4 +42,7 @@ import SMOSmImagebarcode from 'react-native-sm-imagebarcode';
 // TODO: What to do with the module?
 SMOSmImagebarcode;
 ```
-  
+
+### CHANGELOG
+* 1.1.0 : 支持4.0.5以上版本
+* 1.0.0 : 支持4.0.0 ~ 4.0.4 版本
