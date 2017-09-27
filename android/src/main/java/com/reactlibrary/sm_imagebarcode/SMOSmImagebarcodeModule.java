@@ -105,7 +105,7 @@ public class SMOSmImagebarcodeModule extends ReactContextBaseJavaModule implemen
   }
 
   @ReactMethod
-  public void showLoadding(ReadableMap params, Callback callback) {
+  public void openLoadding(ReadableMap params, Callback callback) {
     mCurrentActivety = getCurrentActivity();
     if (mCurrentActivety == null) {
       return;
@@ -151,7 +151,7 @@ public class SMOSmImagebarcodeModule extends ReactContextBaseJavaModule implemen
   }
 
   @ReactMethod
-  public void showLoaddingw(ReadableMap params, Callback callback) {
+  public void showLoadding(ReadableMap params, Callback callback) {
     mCurrentActivety = getCurrentActivity();
     if (mCurrentActivety == null || mOpenLoadding == true) {
       return;
