@@ -52,6 +52,7 @@ public class SMOSmImagebarcodeModule extends ReactContextBaseJavaModule implemen
   private Handler mDimissHandler = null;
   private String mMessage = "";
   private static boolean mIsLoadding = false;
+  private static boolean mOpenLoadding = false;
   private Runnable mTimeout = new Runnable(){
     public void run() {
       dimissLoadding(null,null);
@@ -109,6 +110,52 @@ public class SMOSmImagebarcodeModule extends ReactContextBaseJavaModule implemen
     if (mCurrentActivety == null) {
       return;
     }
+    mOpenLoadding = true;
+    mIsLoadding = true;
+    if (params.hasKey("message")) {
+      mMessage = params.getString("message");
+    }
+
+    if(mHud == null){
+      mHud = KProgressHUD.create(mCurrentActivety)
+              .setStyle(KProgressHUD.Style.SPIN_INDETERMINATE)
+              .setLabel(mMessage)
+              .setAnimationSpeed(1)
+              .setDimAmount(0.5f)
+              .setCancellable(false)
+              .show();
+    }else{
+      mHud.setLabel(mMessage);
+      if(mHud.isShowing() == false){
+        mHud.setCancellable(false)
+                .show();
+      }
+    }
+    if(mDimissHandler != null){
+      mDimissHandler.removeCallbacks(mTimeout);
+      mDimissHandler = null;
+    }
+  }
+
+  @ReactMethod
+  public void closeLoadding(ReadableMap params, Callback callback) {
+    mOpenLoadding = false;
+    mIsLoadding = false;
+    if(mHud != null && mHud.isShowing() == true){
+      mHud.dismiss();
+    }
+    if(mDimissHandler != null){
+      mDimissHandler.removeCallbacks(mTimeout);
+      mDimissHandler = null;
+    }
+  }
+
+  @ReactMethod
+  public void showLoaddingw(ReadableMap params, Callback callback) {
+    mCurrentActivety = getCurrentActivity();
+    if (mCurrentActivety == null || mOpenLoadding == true) {
+      return;
+    }
     mIsLoadding = true;
     if (params.hasKey("message")) {
       mMessage = params.getString("message");
@@ -121,12 +168,14 @@ public class SMOSmImagebarcodeModule extends ReactContextBaseJavaModule implemen
               .setAnimationSpeed(1)
               .setDimAmount(0.5f)
               .setGraceTime(200)
+              .setCancellable(true)
               .show();
     }else{
       mHud.setLabel(mMessage);
       if(mHud.isShowing() == false){
         mHud.setGraceTime(200)
-            .show();
+                .setCancellable(true)
+                .show();
       }
     }
     if(mDimissHandler == null){
@@ -139,10 +188,12 @@ public class SMOSmImagebarcodeModule extends ReactContextBaseJavaModule implemen
 
   @ReactMethod
   public void dimissLoadding(ReadableMap params, Callback callback){
+    if (mOpenLoadding == true) {
+      return;
+    }
     mIsLoadding = false;
 	if(mHud != null){
       mHud.dismiss();
-      mHud = null;
     }
     if(mDimissHandler != null){
       mDimissHandler.removeCallbacks(mTimeout);
