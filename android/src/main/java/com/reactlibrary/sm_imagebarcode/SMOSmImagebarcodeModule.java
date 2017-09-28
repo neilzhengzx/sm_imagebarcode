@@ -33,7 +33,6 @@ import com.google.zxing.MultiFormatReader;
 import com.google.zxing.NotFoundException;
 import com.google.zxing.Result;
 import com.google.zxing.common.HybridBinarizer;
-import com.kaopiz.kprogresshud.KProgressHUD;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -48,16 +47,6 @@ public class SMOSmImagebarcodeModule extends ReactContextBaseJavaModule implemen
   private static final int ACTIVITY_RESULT_FOR_PHOTO = 101;
   private static final int REQUEST_CODE_ASK_CAMERA_ZXING = 102;
   private Callback mCallBack;
-  public static KProgressHUD mHud = null;
-  private Handler mDimissHandler = null;
-  private String mMessage = "";
-  private static boolean mIsLoadding = false;
-  private static boolean mOpenLoadding = false;
-  private Runnable mTimeout = new Runnable(){
-    public void run() {
-      dimissLoadding(null,null);
-    }
-  };
 
   public SMOSmImagebarcodeModule(ReactApplicationContext reactContext) {
     super(reactContext);
@@ -102,114 +91,6 @@ public class SMOSmImagebarcodeModule extends ReactContextBaseJavaModule implemen
 
     Intent intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
     mCurrentActivety.startActivityForResult(intent, ACTIVITY_RESULT_FOR_PHOTO);
-  }
-
-  @ReactMethod
-  public void openLoadding(ReadableMap params, Callback callback) {
-    mCurrentActivety = getCurrentActivity();
-    if (mCurrentActivety == null) {
-      return;
-    }
-    mOpenLoadding = true;
-    mIsLoadding = true;
-    if (params.hasKey("message")) {
-      mMessage = params.getString("message");
-    }
-
-    if(mHud == null){
-      mHud = KProgressHUD.create(mCurrentActivety)
-              .setStyle(KProgressHUD.Style.SPIN_INDETERMINATE)
-              .setLabel(mMessage)
-              .setAnimationSpeed(1)
-              .setDimAmount(0.5f)
-              .setCancellable(false)
-              .show();
-    }else{
-      mHud.setLabel(mMessage);
-      if(mHud.isShowing() == false){
-        mHud.setCancellable(false)
-                .show();
-      }
-    }
-    if(mDimissHandler != null){
-      mDimissHandler.removeCallbacks(mTimeout);
-      mDimissHandler = null;
-    }
-  }
-
-  @ReactMethod
-  public void closeLoadding(ReadableMap params, Callback callback) {
-    mOpenLoadding = false;
-    mIsLoadding = false;
-    if(mHud != null && mHud.isShowing() == true){
-      mHud.dismiss();
-    }
-    if(mDimissHandler != null){
-      mDimissHandler.removeCallbacks(mTimeout);
-      mDimissHandler = null;
-    }
-  }
-
-  @ReactMethod
-  public void showLoadding(ReadableMap params, Callback callback) {
-    mCurrentActivety = getCurrentActivity();
-    if (mCurrentActivety == null || mOpenLoadding == true) {
-      return;
-    }
-    mIsLoadding = true;
-    if (params.hasKey("message")) {
-      mMessage = params.getString("message");
-    }
-
-    if(mHud == null){
-      mHud = KProgressHUD.create(mCurrentActivety)
-              .setStyle(KProgressHUD.Style.SPIN_INDETERMINATE)
-              .setLabel(mMessage)
-              .setAnimationSpeed(1)
-              .setDimAmount(0.5f)
-              .setGraceTime(200)
-              .setCancellable(true)
-              .show();
-    }else{
-      mHud.setLabel(mMessage);
-      if(mHud.isShowing() == false){
-        mHud.setGraceTime(200)
-                .setCancellable(true)
-                .show();
-      }
-    }
-    if(mDimissHandler == null){
-      mDimissHandler = new Handler();
-    }else{
-      mDimissHandler.removeCallbacks(mTimeout);
-    }
-    mDimissHandler.postDelayed(mTimeout, 30000);
-  }
-
-  @ReactMethod
-  public void dimissLoadding(ReadableMap params, Callback callback){
-    if (mOpenLoadding == true) {
-      return;
-    }
-    mIsLoadding = false;
-	if(mHud != null){
-      mHud.dismiss();
-    }
-    if(mDimissHandler != null){
-      mDimissHandler.removeCallbacks(mTimeout);
-      mDimissHandler = null;
-    }
-  }
-
-  @ReactMethod
-  public void isLoadding(ReadableMap params, Callback callback){
-    WritableMap response = Arguments.createMap();
-    if(mIsLoadding == true){
-      response.putBoolean("result", true );
-    }else{
-      response.putBoolean("result", false );
-    }
-    callback.invoke(response);
   }
 
   public void onActivityResult(Activity activity, int requestCode, int resultCode, Intent intent) {

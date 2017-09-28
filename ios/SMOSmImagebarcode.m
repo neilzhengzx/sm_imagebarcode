@@ -2,20 +2,14 @@
 #import "SMOSmImagebarcode.h"
 #import "JGProgressHUDheaders/JGProgressHUD.h"
 
-static JGProgressHUD *LOADDING;
-static Boolean isLoadding;
-static Boolean openLoadding;
-
 @interface SMOSmImagebarcode ()
 {
-    JGProgressHUDStyle _style;
     JGProgressHUDInteractionType _interaction;
     NSString* _loaddingText;
+    JGProgressHUD *_loading;
 }
 
 @property (nonatomic, copy) RCTResponseSenderBlock mCallback;
-@property (nonatomic, copy) JGProgressHUD *HUD;
-@property (nonatomic, copy) NSTimer* mTimer;
 
 @end
 
@@ -24,6 +18,17 @@ static Boolean openLoadding;
 - (dispatch_queue_t)methodQueue
 {
     return dispatch_get_main_queue();
+}
+
+- (instancetype)init
+{
+    self = [super init];
+    if (self) {
+        _loading = [JGProgressHUD progressHUDWithStyle:JGProgressHUDStyleDark];
+        _loading.interactionType = _interaction;
+        _loading.backgroundColor = [UIColor colorWithWhite:0.0f alpha:0.4f];
+    }
+    return self;
 }
 
 RCT_EXPORT_MODULE()
@@ -44,95 +49,6 @@ RCT_EXPORT_METHOD(barcodeFromImage:(NSDictionary *)params callback:(RCTResponseS
     [[UIApplication sharedApplication].keyWindow.rootViewController presentViewController:imagePicker animated:YES completion:nil];
 }
 
-RCT_EXPORT_METHOD(openLoadding:(NSDictionary *)params callback:(RCTResponseSenderBlock)callback)
-{
-    //openLoadding 实现, 需要回传结果用callback(@[XXX]), 数组参数里面就一个NSDictionary元素即可
-    openLoadding = true;
-    isLoadding = true;
-    _loaddingText = [params objectForKey:@"message"];
-    if(_mTimer)
-    {
-        [_mTimer invalidate];
-    }
-    JGProgressHUD *HUD = self.prototypeHUD;
-    if( ![HUD isVisible]){
-        [HUD dismiss];
-    }
-    HUD.textLabel.text = _loaddingText;
-    UIView *topView = [[[UIApplication sharedApplication].keyWindow subviews] lastObject];
-    [HUD showInView:topView];
-}
-
-RCT_EXPORT_METHOD(closeLoadding:(NSDictionary *)params callback:(RCTResponseSenderBlock)callback)
-{
-    //closeLoadding 实现, 需要回传结果用callback(@[XXX]), 数组参数里面就一个NSDictionary元素即可
-    openLoadding = false;
-    isLoadding = false;
-    JGProgressHUD *HUD = self.prototypeHUD;
-    [HUD dismiss];
-}
-
-RCT_EXPORT_METHOD(showLoadding:(NSDictionary *)params callback:(RCTResponseSenderBlock)callback)
-{
-    //showLoadding 实现, 需要回传结果用callback(@[XXX]), 数组参数里面就一个NSDictionary元素即可
-    if(openLoadding == true) return;
-    isLoadding = true;
-    _loaddingText = [params objectForKey:@"message"];
-
-    if(_mTimer)
-    {
-        [_mTimer invalidate];
-    }
-    _mTimer = [NSTimer scheduledTimerWithTimeInterval:0.2 target:self selector:@selector(delayMethod) userInfo:nil repeats:NO];
-}
-
-- (void)delayMethod
-{
-    JGProgressHUD *HUD = self.prototypeHUD;
-    HUD.textLabel.text = _loaddingText;
-    if( ![HUD isVisible]){
-        UIView *topView = [[[UIApplication sharedApplication].keyWindow subviews] lastObject];
-        [HUD showInView:topView];
-    }
-    [HUD dismissAfterDelay:30.0];
-}
-
-RCT_EXPORT_METHOD(dimissLoadding:(NSDictionary *)params callback:(RCTResponseSenderBlock)callback)
-{
-    //dimissLoadding 实现, 需要回传结果用callback(@[XXX]), 数组参数里面就一个NSDictionary元素即可
-    if(openLoadding == true) return;
-    isLoadding = false;
-    if(_mTimer)
-    {
-        [_mTimer invalidate];
-        _mTimer = nil;
-    }
-    JGProgressHUD *HUD = self.prototypeHUD;
-    [HUD dismiss];
-}
-
-RCT_EXPORT_METHOD(isLoadding:(NSDictionary *)params callback:(RCTResponseSenderBlock)callback)
-{
-    //dimissLoadding 实现, 需要回传结果用callback(@[XXX]), 数组参数里面就一个NSDictionary元素即可
-    if(isLoadding == true){
-        callback(@[@{@"result":@true}]);
-    }else{
-        callback(@[@{@"result":@false}]);
-    }
-}
-
-- (JGProgressHUD *)prototypeHUD {
-    if(LOADDING == NULL)
-    {
-        LOADDING = [JGProgressHUD progressHUDWithStyle:JGProgressHUDStyleDark];
-        LOADDING.interactionType = _interaction;
-        LOADDING.backgroundColor = [UIColor colorWithWhite:0.0f alpha:0.4f];
-        LOADDING.marginInsets = UIEdgeInsetsMake(0.0f, 0.0f, 10.0f, 0.0f);
-    }
-    
-    return LOADDING;
-}
-
 - (void)imagePickerController:(UIImagePickerController *)picker
 didFinishPickingMediaWithInfo:(NSDictionary *)info
 {
@@ -140,7 +56,7 @@ didFinishPickingMediaWithInfo:(NSDictionary *)info
     NSData *imageData = UIImagePNGRepresentation(pickImage);
     CIImage *ciImage = [CIImage imageWithData:imageData];
     
-    JGProgressHUD *HUD = self.prototypeHUD;
+    JGProgressHUD *HUD = _loading;
     
     HUD.textLabel.text = @"正在识别...";
     
