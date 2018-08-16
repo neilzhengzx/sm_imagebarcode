@@ -97,5 +97,10 @@ didFinishPickingMediaWithInfo:(NSDictionary *)info
                                completion:nil];
 }
 
++ (BOOL)requiresMainQueueSetup
+{
+    return YES;
+}
+
 @end
 
