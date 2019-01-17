@@ -83,7 +83,35 @@ didFinishPickingMediaWithInfo:(NSDictionary *)info
         //取出探测到的数据
         for (CIQRCodeFeature *result in feature) {
             [HUD dismiss];
-            _mCallback(@[@{@"result":result.messageString}]);
+            //这段二维码的作用是是解决gbk乱码的作用
+            NSString *tempStr;
+            NSString *text=result.messageString;//返回的扫描结果
+            //修正扫描出来二维码里有中文时为乱码问题
+            if ([text canBeConvertedToEncoding:NSShiftJISStringEncoding])
+            {
+                tempStr = [NSString stringWithCString:[text cStringUsingEncoding:NSShiftJISStringEncoding] encoding:NSUTF8StringEncoding];
+                
+                //如果转化成utf-8失败，再尝试转化为gbk
+                if (tempStr == nil)
+                {
+                    tempStr = [NSString stringWithCString:[text cStringUsingEncoding:NSShiftJISStringEncoding] encoding:CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingGB_18030_2000)];
+                }
+            }
+            else if([text canBeConvertedToEncoding:NSISOLatin1StringEncoding])
+            {
+                tempStr = [NSString stringWithCString:[text cStringUsingEncoding:NSISOLatin1StringEncoding] encoding:NSUTF8StringEncoding];
+                
+                //如果转化成utf-8失败，再尝试转化为gbk
+                if (tempStr == nil)
+                {
+                    tempStr = [NSString stringWithCString:[text cStringUsingEncoding:NSISOLatin1StringEncoding] encoding:CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingGB_18030_2000)];
+                }
+            }
+            if (tempStr == nil)
+            {
+                tempStr = text;
+            }
+            _mCallback(@[@{@"result":tempStr}]);
             return;
         }
         

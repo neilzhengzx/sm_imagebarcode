@@ -11,7 +11,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.media.ExifInterface;
 import android.net.Uri;
-import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -37,6 +36,8 @@ import com.google.zxing.common.HybridBinarizer;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -182,7 +183,8 @@ public class SMOSmImagebarcodeModule extends ReactContextBaseJavaModule implemen
       if(rawResult != null && rawResult.getText() != null){
 
         WritableMap response = Arguments.createMap();
-        response.putString("result", rawResult.getText() );
+        String data = recode(rawResult.getText());
+        response.putString("result", data);
         mCallBack.invoke(response);
       } else {
         mCurrentActivety.runOnUiThread(new Runnable() {
@@ -199,6 +201,23 @@ public class SMOSmImagebarcodeModule extends ReactContextBaseJavaModule implemen
     }
   }
 
+  //判断编码类型，修复GBK中文乱码
+  private String recode(String str) {
+    String formart = str;
+
+    try {
+      boolean ISO = Charset.forName("ISO-8859-1").newEncoder()
+              .canEncode(str);
+      if (ISO) {
+        formart = new String(str.getBytes("ISO-8859-1"), "GB2312");
+      }
+    } catch (UnsupportedEncodingException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+    return formart;
+  }
+  
   /**
    * A safer decodeStream method
    * rather than the one of {@link BitmapFactory}
