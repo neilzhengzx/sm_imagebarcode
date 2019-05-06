@@ -160,7 +160,7 @@ public class SMOSmImagebarcodeModule extends ReactContextBaseJavaModule implemen
 
       hints.put(DecodeHintType.POSSIBLE_FORMATS, decodeFormats);
       //设置继续的字符编码格式为 UTF8
-      // hints.put(DecodeHintType.CHARACTER_SET, "UTF8");
+      hints.put(DecodeHintType.CHARACTER_SET, "ISO-8859-1");
       //设置解析配置参数
 
       multiFormatReader.setHints(hints);
