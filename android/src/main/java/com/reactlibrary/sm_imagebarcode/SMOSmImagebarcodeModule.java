@@ -202,20 +202,52 @@ public class SMOSmImagebarcodeModule extends ReactContextBaseJavaModule implemen
   }
 
   //判断编码类型，修复GBK中文乱码
-  private String recode(String str) {
-    String formart = str;
+  private String recode(String resultStr) {
+    String UTF_Str="";
+    String GB_Str="";
+    boolean is_cN=false;
 
     try {
-      boolean ISO = Charset.forName("ISO-8859-1").newEncoder()
-              .canEncode(str);
-      if (ISO) {
-        formart = new String(str.getBytes("ISO-8859-1"), "GB2312");
+      UTF_Str=new String(resultStr.getBytes("ISO-8859-1"),"UTF-8");
+      is_cN=isChineseCharacter(UTF_Str);
+      //防止有人特意使用乱码来生成二维码来判断的情况
+      boolean b=isSpecialCharacter(resultStr);
+      if(b){
+        is_cN=true;
+      }
+      if(!is_cN){
+        GB_Str=new String(resultStr.getBytes("ISO-8859-1"),"GB2312");
       }
     } catch (UnsupportedEncodingException e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
     }
-    return formart;
+    if(is_cN){
+      return UTF_Str;
+    }else {
+      return GB_Str;
+    }
+  }
+
+  public boolean isChineseCharacter(String chineseStr) {
+    char[] charArray = chineseStr.toCharArray();
+    for (int i = 0; i < charArray.length; i++) {
+      //是否是Unicode编码,除了"�"这个字符.这个字符要另外处理
+      if ((charArray[i] >= '\u0000' && charArray[i] < '\uFFFD')||((charArray[i] > '\uFFFD' && charArray[i] < '\uFFFF'))) {
+        continue;
+      }
+      else{
+        return false;
+      }
+    }
+    return true;
+  }
+
+  public  boolean isSpecialCharacter(String str){
+    if(str.contains("ï¿½")){
+      return true;
+    }
+    return false;
   }
   
   /**

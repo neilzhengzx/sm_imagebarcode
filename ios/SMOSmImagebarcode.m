@@ -84,77 +84,35 @@ didFinishPickingMediaWithInfo:(NSDictionary *)info
         for (CIQRCodeFeature *result in feature) {
             [HUD dismiss];
             //这段二维码的作用是是解决gbk乱码的作用
-            NSString *endStr = @"";
-            NSString *text=result.messageString;//返回的扫描结果
-            //防止不同编码混用,空格分割字符串
-            int i = 0;
-            while(i < text.length){
-                NSString *tempStr;
-                NSString *oneText =  [text substringWithRange:NSMakeRange(i,1)];
-                int first = i;
-                int number = 0;
-                while ([oneText canBeConvertedToEncoding:NSISOLatin1StringEncoding])
-                {
-                    i++;
-                    number++;
-                    if(i >= text.length){
-                        break;
-                    }
-                    oneText =  [text substringWithRange:NSMakeRange(i,1)];
-                }
+            NSString *tempStr;
+            NSString *text=codeMetadata.stringValue;//返回的扫描结果
+            //修正扫描出来二维码里有中文时为乱码问题
+            if ([text canBeConvertedToEncoding:NSShiftJISStringEncoding])
+            {
+                tempStr = [NSString stringWithCString:[text cStringUsingEncoding:NSShiftJISStringEncoding] encoding:NSUTF8StringEncoding];
                 
-                if(number > 0){
-                    NSString *jpText =  [text substringWithRange:NSMakeRange(first,number)];
-                    tempStr = [NSString stringWithCString:[jpText cStringUsingEncoding:NSISOLatin1StringEncoding] encoding:NSUTF8StringEncoding];
-                    
-                    //如果转化成utf-8失败，再尝试转化为gbk
-                    if (tempStr == nil)
-                    {
-                        tempStr = [NSString stringWithCString:[jpText cStringUsingEncoding:NSISOLatin1StringEncoding] encoding:CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingGB_18030_2000)];
-                    }
-                    if (tempStr == nil)
-                    {
-                        tempStr = jpText;
-                    }
-                    endStr = [endStr stringByAppendingString:tempStr];
-                }
-                if(i >= text.length){
-                    break;
-                }
-                first = i;
-                number = 0;
-                while ([oneText canBeConvertedToEncoding:NSShiftJISStringEncoding])
+                //如果转化成utf-8失败，再尝试转化为gbk
+                if (tempStr == nil)
                 {
-                    i++;
-                    number++;
-                    if(i >= text.length){
-                        break;
-                    }
-                    oneText =  [text substringWithRange:NSMakeRange(i,1)];
-                    if([oneText canBeConvertedToEncoding:NSISOLatin1StringEncoding]){
-                        break;
-                    }
-                }
-                if(number > 0){
-                    NSString *GBKText =  [text substringWithRange:NSMakeRange(first,number)];
-                    tempStr = [NSString stringWithCString:[GBKText cStringUsingEncoding:NSShiftJISStringEncoding] encoding:NSUTF8StringEncoding];
+                    tempStr = [NSString stringWithCString:[text cStringUsingEncoding:NSShiftJISStringEncoding] encoding:CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingGB_18030_2000)];
                     
-                    //如果转化成utf-8失败，再尝试转化为gbk
-                    if (tempStr == nil)
-                    {
-                        tempStr = [NSString stringWithCString:[GBKText cStringUsingEncoding:NSShiftJISStringEncoding] encoding:CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingGB_18030_2000)];
-                    }
-                    if (tempStr == nil)
-                    {
-                        tempStr = GBKText;
-                    }
-                    endStr = [endStr stringByAppendingString:tempStr];
-                }else{
-                    endStr = [endStr stringByAppendingString:oneText];
-                    i++;
                 }
             }
-            _mCallback(@[@{@"result":endStr}]);
+            else if([text canBeConvertedToEncoding:NSISOLatin1StringEncoding])
+            {
+                tempStr = [NSString stringWithCString:[text cStringUsingEncoding:NSISOLatin1StringEncoding] encoding:NSUTF8StringEncoding];
+                
+                //如果转化成utf-8失败，再尝试转化为gbk
+                if (tempStr == nil)
+                {
+                    tempStr = [NSString stringWithCString:[text cStringUsingEncoding:NSISOLatin1StringEncoding] encoding:CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingGB_18030_2000)];
+                }
+            }
+            if (tempStr == nil)
+            {
+                tempStr = text;
+            }
+            _mCallback(@[@{@"result":tempStr}]);
             return;
         }
         
