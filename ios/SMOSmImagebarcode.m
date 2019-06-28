@@ -85,7 +85,7 @@ didFinishPickingMediaWithInfo:(NSDictionary *)info
             [HUD dismiss];
             //这段二维码的作用是是解决gbk乱码的作用
             NSString *tempStr;
-            NSString *text=codeMetadata.stringValue;//返回的扫描结果
+            NSString *text=result.messageString;//返回的扫描结果
             //修正扫描出来二维码里有中文时为乱码问题
             if ([text canBeConvertedToEncoding:NSShiftJISStringEncoding])
             {
