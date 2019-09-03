@@ -12,8 +12,6 @@ import android.graphics.Matrix;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.provider.MediaStore;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.widget.Toast;
 
 import com.facebook.react.bridge.ActivityEventListener;
@@ -37,9 +35,11 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
 import java.util.Hashtable;
 import java.util.Vector;
+
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 public class SMOSmImagebarcodeModule extends ReactContextBaseJavaModule implements ActivityEventListener {
 
