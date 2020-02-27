@@ -140,12 +140,9 @@ public class SMOSmImagebarcodeModule extends ReactContextBaseJavaModule implemen
     MultiFormatReader multiFormatReader = new MultiFormatReader();
 
     //解码的参数
-
     Hashtable<DecodeHintType, Object> hints = new Hashtable<DecodeHintType, Object>(2);
 
     // 可以解析的编码类型
-
-
     Vector<BarcodeFormat> decodeFormats = new Vector<BarcodeFormat>();
 
     if (decodeFormats == null || decodeFormats.isEmpty()) {
@@ -162,15 +159,16 @@ public class SMOSmImagebarcodeModule extends ReactContextBaseJavaModule implemen
       //设置继续的字符编码格式为 UTF8
       hints.put(DecodeHintType.CHARACTER_SET, "ISO-8859-1");
       //设置解析配置参数
-
       multiFormatReader.setHints(hints);
       //开始对图像资源解码
-
       Result rawResult = null;
       try {
-        Bitmap bitmap = safeDecodeStream(path);
+        Bitmap bitmap = safeDecodeStream2(path);
+        if(bitmap == null){
+          bitmap = safeDecodeStream(path);
+        }
+        
         LuminanceSource source = new BitmapLuminanceSource(bitmap);
-
         BinaryBitmap bit = new BinaryBitmap(new HybridBinarizer(source));
         rawResult = multiFormatReader.decodeWithState(bit);
 
@@ -197,7 +195,6 @@ public class SMOSmImagebarcodeModule extends ReactContextBaseJavaModule implemen
           }
         });
       }
-      return ;
     }
   }
 
@@ -300,6 +297,28 @@ public class SMOSmImagebarcodeModule extends ReactContextBaseJavaModule implemen
     bmp = rotaingImageView(degree, bmp);
 
     return bmp;
+  }
+
+  public static Bitmap safeDecodeStream2(String path){
+    BitmapFactory.Options options = new BitmapFactory.Options();
+    options.inJustDecodeBounds = true;// 设置成了true,不占用内存，只获取bitmap宽高
+    BitmapFactory.decodeFile(path, options);
+
+    int imageHeight = options.outHeight;
+    int imageWidth = options.outWidth;
+
+    options.inDither = false;
+    options.inPreferredConfig = Bitmap.Config.RGB_565;
+
+    options.inSampleSize = 1;
+    while(Math.max(imageHeight, imageWidth)/options.inSampleSize > 1024){
+      options.inSampleSize *= 2;
+    }
+    if(options.inSampleSize == 1)
+    options.inSampleSize /= 2;
+
+    options.inJustDecodeBounds = false;
+    return BitmapFactory.decodeFile(path, options);
   }
 
   private static int computeInitialSampleSize(BitmapFactory.Options options,
