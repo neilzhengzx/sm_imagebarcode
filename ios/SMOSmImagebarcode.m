@@ -41,6 +41,7 @@ RCT_EXPORT_METHOD(barcodeFromImage:(NSDictionary *)params callback:(RCTResponseS
     UIImagePickerController *imagePicker = [[UIImagePickerController alloc] init];
     
     imagePicker.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
+    imagePicker.modalPresentationStyle = UIModalPresentationCurrentContext;
     
     imagePicker.delegate = self;
     
