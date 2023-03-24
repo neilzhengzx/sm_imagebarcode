@@ -137,6 +137,8 @@ public class SMOSmImagebarcodeModule extends ReactContextBaseJavaModule implemen
 
   private void startParseBitmap(String path)
   {
+    if( mCallBack == null) return;
+    
     MultiFormatReader multiFormatReader = new MultiFormatReader();
 
     //解码的参数
@@ -184,6 +186,7 @@ public class SMOSmImagebarcodeModule extends ReactContextBaseJavaModule implemen
         String data = recode(rawResult.getText());
         response.putString("result", data);
         mCallBack.invoke(response);
+        mCallBack = null;
       } else {
         mCurrentActivety.runOnUiThread(new Runnable() {
 
