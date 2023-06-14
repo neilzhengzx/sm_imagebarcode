@@ -30,7 +30,7 @@ repositories {
 }
 
 dependencies {
-    implementation "com.google.zxing:core:3.3.3"
+    implementation "com.google.zxing:core:$rootProject.ext.zxingCoreVersion"
     compileOnly 'com.facebook.react:react-native:+'
 }
   
