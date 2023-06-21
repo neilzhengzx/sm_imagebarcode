@@ -13,6 +13,7 @@ Pod::Spec.new do |s|
   s.source        = { :git => 'http://git.smobiler.com:8442/RN-Source/sm_imagebarcode.git', :tag => "v#{s.version}" }
   s.platform      = :ios, '9.0'
   s.source_files  = "ios/**/*.{h,m}"
+  s.pod_target_xcconfig = { 'HEADER_SEARCH_PATHS' => '"$(SRCROOT)/../libs"' }
 
   s.dependency 'React-Core'
 end
